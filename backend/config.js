@@ -1,0 +1,2 @@
+const JWT_SECRET = 'aoegnoagOAWEIRHGWEO#$@#452345636U756890U';
+module.exports = JWT_SECRET;
