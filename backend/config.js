@@ -1,2 +1,5 @@
-const JWT_SECRET = 'aoegnoagOAWEIRHGWEO#$@#452345636U756890U';
-module.exports= JWT_SECRET;
+require('dotenv').config();
+
+const JWT_SECRET = process.env.JWT_SECRET;
+
+module.exports = {  MONGODB_URI };

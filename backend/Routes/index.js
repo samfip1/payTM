@@ -1,12 +1,17 @@
 const express = require("express");
 const userRouter = require("./user")
-const zod = require("zod")
+const zod = require("zod");
 const jwt = require("jsonwebtoken");
-const User = require("./../db")
+const User = require("./../db");
 const router = express.Router();
-router.use('/user', userRouter)
+const accountRouter = require("./account");
+const authMiddleware = require("./../middleware");
+
+router.use('/user', userRouter);
+router.use('/account', accountRouter);
+
 module.exports = router;
-const JWT_SECRET = require('./../config').default
+const JWT_SECRET = require('./../config').default;
 const signupSchema = zod.object({
     username: zod.string().email(),
     password: zod.string().min(8).includes('@#$%^&*()!'),
@@ -48,6 +53,10 @@ router.post("/signup", async (req, res) => {
     })
     const userId = user._id;
 
+    await User.Account.create({
+        userId,
+        balance: Math.random()*1000,        
+    })
 
     const token = jwt.sign({
         userId
@@ -179,5 +188,65 @@ router.get("/bulk", async (req, res) => {
             lastName: user.lastName,
             _id: user._id
         }))
+    })
+})
+
+
+
+router.get('/balance', authMiddleware, async (req,res) => {
+    const acc = await User.Account.findOne({
+        userId: req.userId
+    })
+    
+    res.json({
+        balance: acc.balance
+    })
+
+})
+
+
+
+
+//bad Solution
+router.post('/transfer', authMiddleware, async (req, res) => {
+    const {amount , to} = req.body;
+
+    const account = await Account.findOne({
+        userId: req.userId
+    });
+
+    if(User.Account.balance < amount) {
+        return res.status(400).json({
+            message: "Insufficient balance"
+        })
+    }
+
+    const trans = await User.Account.findOne({
+        userid: to
+    })
+
+    if(!trans) {
+        return res.status(400).json({
+            message: "Invalid Account"
+        })      
+    }
+
+    await User.Account.updateOne({
+        userId: req.userId,   
+    }, {
+        $inc: {
+            balance: -amount
+        }
+    })
+
+    await User.Account.updateOne({
+        id: to
+    }, {
+        $inc: {
+            balance: +amount
+        }
+    })
+    res.json({
+            message: "Transfer successful"
     })
 })

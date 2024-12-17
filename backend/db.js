@@ -60,7 +60,7 @@ const userSchema = new mongoose.Schema({
 const accountSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId, // Reference to User model
-        ref: 'User',
+        ref: 'User',    //If the user is present in the db then only the accoutdb will be allowed to it
         required: true
     },
     balance: {
@@ -73,6 +73,6 @@ const Account = mongoose.model('Account', accountSchema);
 const User = mongoose.model('User', userSchema);
 
 module.exports = {
+    Account,
 	User,
-  Account,
 };
